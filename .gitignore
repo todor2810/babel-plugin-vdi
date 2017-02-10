@@ -1,3 +1,6 @@
+# Compiled NPM package
+lib
+
 # Logs
 logs
 *.log
