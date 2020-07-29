@@ -2,29 +2,21 @@
   "name": "babel-plugin-vdi",
   "version": "1.0.0",
   "description": "Babel plugin that inserts variable declarations for non-declared variables.",
-  "main": "lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel src -d lib"
-  },
+  "main": "src/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nodescript/babel-plugin-vdi.git"
+    "url": "git+https://github.com/tedstoychev/babel-plugin-vdi.git"
   },
   "keywords": [
     "babel",
     "babel-plugin"
   ],
-  "author": "Todor Stoychev <todor@pretodor.com>",
+  "author": "Ted Stoychev",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nodescript/babel-plugin-vdi/issues"
+    "url": "https://github.com/tedstoychev/babel-plugin-vdi/issues"
   },
-  "homepage": "https://github.com/nodescript/babel-plugin-vdi#readme",
-  "devDependencies": {
-    "babel-cli": "^6.22.2",
-    "babel-preset-es2015": "^6.22.0"
-  },
+  "homepage": "https://github.com/tedstoychev/babel-plugin-vdi#readme",
   "dependencies": {
     "babel-traverse": "^6.22.1"
   }
