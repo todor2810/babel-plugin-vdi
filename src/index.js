@@ -2,7 +2,7 @@ import Binding from 'babel-traverse/lib/scope/binding';
 
 export default function ({types: t}) {
   function insertVariableDeclarationBeforePathAndUpdateScope(id, path) {
-    let variableDeclaration = t.variableDeclaration('let', [t.variableDeclarator(id)]);
+    const variableDeclaration = t.variableDeclaration('let', [t.variableDeclarator(id)]);
     path.insertBefore(variableDeclaration);
 
     path.scope.bindings[id.name] = new Binding({
@@ -14,10 +14,10 @@ export default function ({types: t}) {
     });
   }
 
-  let expressionStatementTransformer = {
+  const expressionStatementTransformer = {
     Identifier(path) {
-      let pathParent = path.parent;
-      let pathNode = path.node;
+      const pathParent = path.parent;
+      const pathNode = path.node;
 
       if (
         (t.isObjectProperty(pathParent) && pathNode === pathParent.value)
@@ -33,10 +33,10 @@ export default function ({types: t}) {
     }
   };
 
-  let forStatementTransformer = {
+  const forStatementTransformer = {
     Identifier(path) {
-      let pathParent = path.parent;
-      let pathNode = path.node;
+      const pathParent = path.parent;
+      const pathNode = path.node;
 
       if (this.undeclaredId === undefined) {
         if (
@@ -45,7 +45,7 @@ export default function ({types: t}) {
             || (t.isAssignmentPattern(pathParent) && pathNode === pathParent.left)
         ) {
           if (!this.forStatementPath.scope.hasBinding(pathNode.name)) {
-            let uid = this.forStatementPath.scope.generateUidIdentifier(pathNode.name);
+            const uid = this.forStatementPath.scope.generateUidIdentifier(pathNode.name);
             insertVariableDeclarationBeforePathAndUpdateScope(uid, this.forStatementPath);
             this.forStatementPath.traverse(forStatementTransformer, {
               undeclaredId: pathNode,
@@ -59,10 +59,10 @@ export default function ({types: t}) {
     }
   };
 
-  let forOfStatementTransformer = {
+  const forOfStatementTransformer = {
     Identifier(path) {
-      let pathParent = path.parent;
-      let pathNode = path.node;
+      const pathParent = path.parent;
+      const pathNode = path.node;
 
       if (this.undeclaredId === undefined) {
         if (
@@ -71,7 +71,7 @@ export default function ({types: t}) {
             || (t.isAssignmentPattern(pathParent) && pathNode === pathParent.left)
         ) {
           if (!this.forOfStatementPath.scope.hasBinding(pathNode.name)) {
-            let uid = this.forOfStatementPath.scope.generateUidIdentifier(pathNode.name);
+            const uid = this.forOfStatementPath.scope.generateUidIdentifier(pathNode.name);
             insertVariableDeclarationBeforePathAndUpdateScope(uid, this.forOfStatementPath);
             this.forOfStatementPath.traverse(forOfStatementTransformer, {
               undeclaredId: pathNode,
@@ -85,18 +85,18 @@ export default function ({types: t}) {
     }
   };
 
-  let visitorWrapper = {
+  const visitorWrapper = {
     visitor: {
       ExpressionStatement(path) {
         if (this.lastPath === undefined) {
           if (t.isAssignmentExpression(path.node.expression)) {
-            let left = path.node.expression.left;
+            const left = path.node.expression.left;
             if (t.isIdentifier(left)) {
               if (!path.scope.hasBinding(left.name)) {
                 insertVariableDeclarationBeforePathAndUpdateScope(left, path);
               }
             } else { // ArrayPattern, ObjectPattern, etc.
-              let subPath = path.get('expression.left');
+              const subPath = path.get('expression.left');
               subPath.traverse(expressionStatementTransformer, {expressionStatementPath: path});
             }
             // We have to do this in order for the sibling nodes to see the changes
@@ -110,26 +110,26 @@ export default function ({types: t}) {
 
       ForStatement(path) {
         if (this.lastPath === undefined) {
-          let init = path.node.init;
+          const init = path.node.init;
           if (t.isAssignmentExpression(init)) {
             if (t.isIdentifier(init.left)) {
               if (!path.scope.hasBinding(init.left.name)) {
-                let newInit = t.variableDeclaration('let', [t.variableDeclarator(init.left, init.right)]);
-                let newPath = t.forStatement(newInit, path.node.test, path.node.update, path.node.body);
+                const newInit = t.variableDeclaration('let', [t.variableDeclarator(init.left, init.right)]);
+                const newPath = t.forStatement(newInit, path.node.test, path.node.update, path.node.body);
                 path.replaceWith(newPath);
               }
             } else { // ArrayPattern, ObjectPattern, etc.
-              let subPath = path.get('init.left');
+              const subPath = path.get('init.left');
               subPath.traverse(forStatementTransformer, {forStatementPath: path});
             }
           } else if (t.isSequenceExpression(init)) {
             for (let i = 0; i < init.expressions.length; i += 1) {
-              let expression = init.expressions[i];
+              const expression = init.expressions[i];
 
               if (t.isIdentifier(expression.left)) {
                 if (!path.scope.hasBinding(expression.left.name)) {
-                  let id = expression.left;
-                  let uid = path.scope.generateUidIdentifier(id.name);
+                  const id = expression.left;
+                  const uid = path.scope.generateUidIdentifier(id.name);
                   insertVariableDeclarationBeforePathAndUpdateScope(uid, path);
                   path.traverse(forStatementTransformer, {
                     undeclaredId: id,
@@ -137,7 +137,7 @@ export default function ({types: t}) {
                   });
                 }
               } else { // ArrayPattern, ObjectPattern, etc.
-                let subPath = path.get(`init.expressions.${i}.left`);
+                const subPath = path.get(`init.expressions.${i}.left`);
                 subPath.traverse(forStatementTransformer, {forStatementPath: path});
               }
             }
@@ -147,16 +147,16 @@ export default function ({types: t}) {
 
       ForOfStatement(path) {
         if (this.lastPath === undefined) {
-          let left = path.node.left;
+          const left = path.node.left;
 
           if (t.isIdentifier(left)) {
             if (!path.scope.hasBinding(left.name)) {
-              let newLeft = t.variableDeclaration('let', [t.variableDeclarator(left)]);
-              let newPath = t.forOfStatement(newLeft, path.node.right, path.node.body);
+              const newLeft = t.variableDeclaration('let', [t.variableDeclarator(left)]);
+              const newPath = t.forOfStatement(newLeft, path.node.right, path.node.body);
               path.replaceWith(newPath);
             }
           } else { // ArrayPattern, ObjectPattern, etc.
-            let subPath = path.get('left');
+            const subPath = path.get('left');
             subPath.traverse(forOfStatementTransformer, {forOfStatementPath: path});
           }
         }
@@ -164,10 +164,10 @@ export default function ({types: t}) {
 
       ForInStatement(path) {
         if (this.lastPath === undefined) {
-          let left = path.node.left;
+          const left = path.node.left;
           if (t.isIdentifier(left) && !path.scope.hasBinding(left.name)) {
-            let newLeft = t.variableDeclaration('let', [t.variableDeclarator(left)]);
-            let newPath = t.forInStatement(newLeft, path.node.right, path.node.body);
+            const newLeft = t.variableDeclaration('let', [t.variableDeclarator(left)]);
+            const newPath = t.forInStatement(newLeft, path.node.right, path.node.body);
             path.replaceWith(newPath);
           }
         }
