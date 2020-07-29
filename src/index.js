@@ -1,7 +1,6 @@
 import Binding from 'babel-traverse/lib/scope/binding';
 
-
-export default function ({ types: t }) {
+export default function ({types: t}) {
   function insertVariableDeclarationBeforePathAndUpdateScope(id, path) {
     let variableDeclaration = t.variableDeclaration('let', [t.variableDeclarator(id)]);
     path.insertBefore(variableDeclaration);
@@ -20,12 +19,13 @@ export default function ({ types: t }) {
       let pathParent = path.parent;
       let pathNode = path.node;
 
-      if ((t.isObjectProperty(pathParent) && pathNode === pathParent.value) ||
-        (t.isArrayPattern(pathParent)) ||
-        (t.isAssignmentPattern(pathParent) && pathNode === pathParent.left) ||
-        (t.isRestElement(pathParent)) ||
-        (t.isRestProperty(pathParent))) {
-
+      if (
+        (t.isObjectProperty(pathParent) && pathNode === pathParent.value)
+          || t.isArrayPattern(pathParent)
+          || (t.isAssignmentPattern(pathParent) && pathNode === pathParent.left)
+          || t.isRestElement(pathParent)
+          || t.isRestProperty(pathParent)
+      ) {
         if (!this.expressionStatementPath.scope.hasBinding(pathNode.name)) {
           insertVariableDeclarationBeforePathAndUpdateScope(pathNode, this.expressionStatementPath);
         }
@@ -39,18 +39,18 @@ export default function ({ types: t }) {
       let pathNode = path.node;
 
       if (this.undeclaredId === undefined) {
-        if ((t.isObjectProperty(pathParent) && pathNode === pathParent.value) ||
-          (t.isArrayPattern(pathParent)) ||
-          (t.isAssignmentPattern(pathParent) && pathNode === pathParent.left)) {
-
+        if (
+          (t.isObjectProperty(pathParent) && pathNode === pathParent.value)
+            || t.isArrayPattern(pathParent)
+            || (t.isAssignmentPattern(pathParent) && pathNode === pathParent.left)
+        ) {
           if (!this.forStatementPath.scope.hasBinding(pathNode.name)) {
             let uid = this.forStatementPath.scope.generateUidIdentifier(pathNode.name);
             insertVariableDeclarationBeforePathAndUpdateScope(uid, this.forStatementPath);
-            this.forStatementPath.traverse(forStatementTransformer,
-              {
-                undeclaredId: pathNode,
-                declaredId: uid
-              });
+            this.forStatementPath.traverse(forStatementTransformer, {
+              undeclaredId: pathNode,
+              declaredId: uid
+            });
           }
         }
       } else if (this.undeclaredId.name === pathNode.name) {
@@ -65,35 +65,30 @@ export default function ({ types: t }) {
       let pathNode = path.node;
 
       if (this.undeclaredId === undefined) {
-        if ((t.isObjectProperty(pathParent) && pathNode === pathParent.value) ||
-          (t.isArrayPattern(pathParent)) ||
-          (t.isAssignmentPattern(pathParent) && pathNode === pathParent.left)) {
-
+        if (
+          (t.isObjectProperty(pathParent) && pathNode === pathParent.value)
+            || t.isArrayPattern(pathParent)
+            || (t.isAssignmentPattern(pathParent) && pathNode === pathParent.left)
+        ) {
           if (!this.forOfStatementPath.scope.hasBinding(pathNode.name)) {
             let uid = this.forOfStatementPath.scope.generateUidIdentifier(pathNode.name);
             insertVariableDeclarationBeforePathAndUpdateScope(uid, this.forOfStatementPath);
-            this.forOfStatementPath.traverse(forOfStatementTransformer,
-              {
-                undeclaredId: pathNode,
-                declaredId: uid
-              });
+            this.forOfStatementPath.traverse(forOfStatementTransformer, {
+              undeclaredId: pathNode,
+              declaredId: uid
+            });
           }
         }
-
       } else if (this.undeclaredId.name === pathNode.name) {
         path.replaceWith(this.declaredId);
       }
     }
   };
 
-
-
   let visitorWrapper = {
     visitor: {
-
       ExpressionStatement(path) {
         if (this.lastPath === undefined) {
-
           if (t.isAssignmentExpression(path.node.expression)) {
             let left = path.node.expression.left;
             if (t.isIdentifier(left)) {
@@ -102,10 +97,10 @@ export default function ({ types: t }) {
               }
             } else { // ArrayPattern, ObjectPattern, etc.
               let subPath = path.get('expression.left');
-              subPath.traverse(expressionStatementTransformer, { expressionStatementPath: path });
+              subPath.traverse(expressionStatementTransformer, {expressionStatementPath: path});
             }
             // We have to do this in order for the sibling nodes to see the changes
-            path.parentPath.traverse(visitorWrapper.visitor, { lastPath: path });
+            path.parentPath.traverse(visitorWrapper.visitor, {lastPath: path});
             path.stop();
           }
         } else if (this.lastPath === path) {
@@ -125,7 +120,7 @@ export default function ({ types: t }) {
               }
             } else { // ArrayPattern, ObjectPattern, etc.
               let subPath = path.get('init.left');
-              subPath.traverse(forStatementTransformer, { forStatementPath: path });
+              subPath.traverse(forStatementTransformer, {forStatementPath: path});
             }
           } else if (t.isSequenceExpression(init)) {
             for (let i = 0; i < init.expressions.length; i += 1) {
@@ -136,15 +131,14 @@ export default function ({ types: t }) {
                   let id = expression.left;
                   let uid = path.scope.generateUidIdentifier(id.name);
                   insertVariableDeclarationBeforePathAndUpdateScope(uid, path);
-                  path.traverse(forStatementTransformer,
-                    {
-                      undeclaredId: id,
-                      declaredId: uid
-                    });
+                  path.traverse(forStatementTransformer, {
+                    undeclaredId: id,
+                    declaredId: uid
+                  });
                 }
               } else { // ArrayPattern, ObjectPattern, etc.
                 let subPath = path.get(`init.expressions.${i}.left`);
-                subPath.traverse(forStatementTransformer, { forStatementPath: path });
+                subPath.traverse(forStatementTransformer, {forStatementPath: path});
               }
             }
           }
@@ -163,7 +157,7 @@ export default function ({ types: t }) {
             }
           } else { // ArrayPattern, ObjectPattern, etc.
             let subPath = path.get('left');
-            subPath.traverse(forOfStatementTransformer, { forOfStatementPath: path });
+            subPath.traverse(forOfStatementTransformer, {forOfStatementPath: path});
           }
         }
       },
